@@ -8,22 +8,23 @@ import flask_admin as admin
 
 from wtforms import form, fields
 
-from flask_admin.form import Select2Widget
+from flask_admin.form import Select2Widget, DatePickerWidget
 from flask_admin.contrib.pymongo import ModelView, filters
 from flask_admin.model.fields import InlineFormField, InlineFieldList
 from flask_admin import BaseView,expose
 from .user import User
 from flask import session, redirect,url_for,request
 from flask_login import current_user
+from flask_admin import AdminIndexView
+from flask_admin.form import widgets
+from flask_admin.form.widgets import DateTimePickerWidget
+
 
 
 
 # Create models
 db = MongoClient()["learningBrix"]
 
-class MyView(BaseView):
-    def is_accessible(self):
-        return False
 
 # User admin
 class InnerForm(form.Form):
@@ -49,8 +50,8 @@ class UserView(ModelView):
         
         return current_user.is_authenticated() 
 
-    column_list = ('fname','lname', 'email', 'password')
-    column_sortable_list = ('fname', 'email', 'password')
+    column_list = ('fname','lname', 'email')
+    column_sortable_list = ('fname', 'email')
 
     form = UserForm
 
@@ -121,21 +122,107 @@ class TweetView(ModelView):
         model['user_id'] = ObjectId(user_id)
 
         return model
+    
 
 
-# Flask views
-#@app.route('/')
-#def index():
-    #return '<a href="/admin/">Click me to get to Admin!</a>'
+
+# Branch Form
+class BranchForm(form.Form):
+    branch = fields.StringField('branch')
+    address = fields.StringField('address')
+    
+        
+# School form
+class SchoolForm(form.Form):
+    name = fields.StringField('name')
+
+    # Form list
+    Branch = InlineFieldList(InlineFormField(BranchForm))
+   
+    
+# School view        
+class SchoolView(ModelView):
+    def is_accessible(self):
+       
+        
+        return current_user.is_authenticated()
+    
+    column_list = ('name', 'branchName')
+    column_sortable_list = ('name')
+
+    column_filters = (filters.FilterEqual('name', 'name'),filters.FilterNotEqual('name', 'name'),filters.FilterLike('name', 'name'),filters.FilterNotLike('name', 'name'))
+                     
+
+    column_searchable_list = ('name', 'name')
+
+    form = SchoolForm
+
+    def get_list(self, *args, **kwargs):
+        count, data = super(SchoolView, self).get_list(*args, **kwargs)
+
+        # Grab user names
+        #query = {'name': {'$in': [x['user_id'] for x in data]}}
+       
+        for d in data:
+            bn=[]
+            for b in d["Branch"]:
+                bn.append(b["branch"])
+            d["branchName"]=bn
+                
+           
+
+        
+
+        return count, data
 
 
-#if __name__ == '__main__':
-    # Create admin
-    #admin = admin.Admin(app, name='Example: PyMongo')
+# School form
+class StudentForm(form.Form):
+    fname = fields.StringField('fname')
+    mname = fields.StringField('mname')
+    lname = fields.StringField('lname')
+    dob=fields.StringField('dob', widget=widgets.DatePickerWidget())
+    school=fields.SelectField('School', widget=Select2Widget())
+    
+class StudentView(ModelView):
+    def is_accessible(self):
+       
+        
+        return current_user.is_authenticated()
+    
+    column_list = ('fname','mname','lname', 'schoolName','branchName')
+    column_sortable_list = ('fname')
+    form = StudentForm
+    
+    
+    def get_list(self, *args, **kwargs):
+        count, data = super(StudentView, self).get_list(*args, **kwargs)
 
-    # Add views
-    #admin.add_view(UserView(db.user, 'User'))
-    #admin.add_view(TweetView(db.tweet, 'Tweets'))
+       
+        for d in data:
+            sid=d["school"]
+            school=db.School.find_one({"_id":ObjectId(sid)})
+            print(school)
+            
+            d["schoolName"]=school["name"]
+                
+           
 
-    # Start app
-    #app.run(debug=True)
+        
+
+        return count, data
+
+    
+        # Contribute list of user choices to the forms
+    def _feed_school_choices(self, form):
+        school = db.School.find(fields=('name',))
+        form.school.choices = [(str(x['_id']), x['name']) for x in school]
+        return form
+
+    def create_form(self):
+        form = super(StudentView, self).create_form()
+        return self._feed_school_choices(form)
+
+    def edit_form(self, obj):
+        form = super(StudentView, self).edit_form(obj)
+        return self._feed_school_choices(form)
