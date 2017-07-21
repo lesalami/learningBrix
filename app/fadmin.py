@@ -18,6 +18,7 @@ from flask_login import current_user
 from flask_admin import AdminIndexView
 from flask_admin.form import widgets
 from flask_admin.form.widgets import DateTimePickerWidget
+from werkzeug.security import generate_password_hash
 
 
 
@@ -54,6 +55,14 @@ class UserView(ModelView):
     column_sortable_list = ('fname', 'email')
 
     form = UserForm
+    
+    # Correct user_id reference before saving
+    def on_model_change(self, form, model):
+        password = model.get('password')
+        model['password'] = generate_password_hash(password)
+
+        return model
+    
 
 
 # Tweet view
