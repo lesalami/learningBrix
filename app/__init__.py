@@ -2,7 +2,8 @@ from flask import Flask
 from flask_login import LoginManager
 import flask_admin as admin
 from flask_admin import AdminIndexView,expose
-from .fadmin import UserView,TweetView,SchoolView,StudentView,db
+from .fadmin import UserView,SchoolView,StudentView,db,ClassView, CurriculumView
+#from .fadmin import TweetView
 
 
 
@@ -26,10 +27,14 @@ admin = admin.Admin(app, name='LearningBrix',index_view=MyHomeView())
 
 # Add views
 admin.add_view(UserView(db.Users, 'Users'))
-admin.add_view(SchoolView(db.School, 'School'))
+#admin.add_view(SchoolView(db.School, 'School'))
+admin.add_view(SchoolView(db.School, name="Schools",category="School"))
+admin.add_view(ClassView(db.ClassGroup, name="Classes and Groups", category="School"))
+admin.add_view(CurriculumView(db.Curriculum, name="Curriculum",category="School"))
+
 admin.add_view(StudentView(db.Students, 'Students'))
 
-admin.add_view(TweetView(db.tweet, 'Tweet'))
+#admin.add_view(TweetView(db.tweet, 'Tweet'))
 
 
 from app import views

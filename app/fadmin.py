@@ -66,71 +66,71 @@ class UserView(ModelView):
 
 
 # Tweet view
-class TweetForm(form.Form):
-    name = fields.StringField('name')
-    user_id = fields.SelectField('Users', widget=Select2Widget())
-    text = fields.StringField('Text')
-
-    testie = fields.BooleanField('Test')
-
-
-class TweetView(ModelView):
-    def is_accessible(self):
-       
-        
-        return current_user.is_authenticated()
-    
-    column_list = ('name', 'user_id','text')
-    column_sortable_list = ('fname')
-
-    column_filters = (filters.FilterEqual('name', 'name'),
-                      filters.FilterNotEqual('name', 'name'),
-                      filters.FilterLike('name', 'name'),
-                      filters.FilterNotLike('name', 'name'),
-                      filters.BooleanEqualFilter('testie', 'Testie'))
-
-    column_searchable_list = ('fname', 'text')
-
-    form = TweetForm
-    
+# class TweetForm(form.Form):
+#     name = fields.StringField('name')
+#     user_id = fields.SelectField('Users', widget=Select2Widget())
+#     text = fields.StringField('Text')
+# 
+#     testie = fields.BooleanField('Test')
 
 
-
-    def get_list(self, *args, **kwargs):
-        count, data = super(TweetView, self).get_list(*args, **kwargs)
-
-        # Grab user names
-        query = {'_id': {'$in': [x['user_id'] for x in data]}}
-        users = db.users.find(query, fields=('fname',))
-
-        # Contribute user names to the models
-        users_map = dict((x['_id'], x['fname']) for x in users)
-
-        for item in data:
-            item['email'] = users_map.get(item['user_id'])
-
-        return count, data
-
-    # Contribute list of user choices to the forms
-    def _feed_user_choices(self, form):
-        users = db.Users.find(fields=('fname',))
-        form.user_id.choices = [(str(x['_id']), x['fname']) for x in users]
-        return form
-
-    def create_form(self):
-        form = super(TweetView, self).create_form()
-        return self._feed_user_choices(form)
-
-    def edit_form(self, obj):
-        form = super(TweetView, self).edit_form(obj)
-        return self._feed_user_choices(form)
-
-    # Correct user_id reference before saving
-    def on_model_change(self, form, model):
-        user_id = model.get('user_id')
-        model['user_id'] = ObjectId(user_id)
-
-        return model
+# class TweetView(ModelView):
+#     def is_accessible(self):
+#        
+#         
+#         return current_user.is_authenticated()
+#     
+#     column_list = ('name', 'user_id','text')
+#     column_sortable_list = ('fname')
+# 
+#     column_filters = (filters.FilterEqual('name', 'name'),
+#                       filters.FilterNotEqual('name', 'name'),
+#                       filters.FilterLike('name', 'name'),
+#                       filters.FilterNotLike('name', 'name'),
+#                       filters.BooleanEqualFilter('testie', 'Testie'))
+# 
+#     column_searchable_list = ('fname', 'text')
+# 
+#     form = TweetForm
+#     
+# 
+# 
+# 
+#     def get_list(self, *args, **kwargs):
+#         count, data = super(TweetView, self).get_list(*args, **kwargs)
+# 
+#         # Grab user names
+#         query = {'_id': {'$in': [x['user_id'] for x in data]}}
+#         users = db.users.find(query, fields=('fname',))
+# 
+#         # Contribute user names to the models
+#         users_map = dict((x['_id'], x['fname']) for x in users)
+# 
+#         for item in data:
+#             item['email'] = users_map.get(item['user_id'])
+# 
+#         return count, data
+# 
+#     # Contribute list of user choices to the forms
+#     def _feed_user_choices(self, form):
+#         users = db.Users.find(fields=('fname',))
+#         form.user_id.choices = [(str(x['_id']), x['fname']) for x in users]
+#         return form
+# 
+#     def create_form(self):
+#         form = super(TweetView, self).create_form()
+#         return self._feed_user_choices(form)
+# 
+#     def edit_form(self, obj):
+#         form = super(TweetView, self).edit_form(obj)
+#         return self._feed_user_choices(form)
+# 
+#     # Correct user_id reference before saving
+#     def on_model_change(self, form, model):
+#         user_id = model.get('user_id')
+#         model['user_id'] = ObjectId(user_id)
+# 
+#         return model
     
 
 
@@ -156,6 +156,8 @@ class SchoolView(ModelView):
         
         return current_user.is_authenticated()
     
+    
+    
     column_list = ('name', 'branchName')
     column_sortable_list = ('name')
 
@@ -165,7 +167,8 @@ class SchoolView(ModelView):
     column_searchable_list = ('name', 'name')
 
     form = SchoolForm
-
+    
+ 
     def get_list(self, *args, **kwargs):
         count, data = super(SchoolView, self).get_list(*args, **kwargs)
 
@@ -199,7 +202,7 @@ class StudentView(ModelView):
         
         return current_user.is_authenticated()
     
-    column_list = ('fname','mname','lname', 'schoolName','branchName')
+    column_list = ('fname','mname','lname', 'schoolName','dob')
     column_sortable_list = ('fname')
     form = StudentForm
     
@@ -235,3 +238,141 @@ class StudentView(ModelView):
     def edit_form(self, obj):
         form = super(StudentView, self).edit_form(obj)
         return self._feed_school_choices(form)
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+# Curriculum View form
+# ClassItem Form
+class CourseForm(form.Form):
+    name = fields.StringField('name')
+    description = fields.StringField('description')
+    core = fields.StringField('core')
+    
+        
+# School form
+class CurriculumForm(form.Form):
+    name = fields.StringField('curriculum')
+    school = fields.SelectField('School', widget=Select2Widget())
+
+    # Form list
+    Course = InlineFieldList(InlineFormField(CourseForm))
+    
+class CurriculumView(ModelView):
+    def is_accessible(self):
+       
+        
+        return current_user.is_authenticated()
+    
+    column_list = ("name","schoolName")
+    column_sortable_list = ('name')
+    form = CurriculumForm
+    
+    
+    def get_list(self, *args, **kwargs):
+        count, data = super(CurriculumView, self).get_list(*args, **kwargs)
+
+       
+        for d in data:
+            sid=d["school"]
+            school=db.School.find_one({"_id":ObjectId(sid)})
+            #print(school)
+            
+            d["schoolName"]=school["name"]
+
+        return count, data
+    
+        # Contribute list of user choices to the forms
+    def _feed_school_choices(self, form):
+        school = db.School.find(fields=('name',))
+        form.school.choices = [(str(x['_id']), x['name']) for x in school]
+        return form
+
+    def create_form(self):
+        form = super(CurriculumView, self).create_form()
+        return self._feed_school_choices(form)
+
+    def edit_form(self, obj):
+        form = super(CurriculumView, self).edit_form(obj)
+        return self._feed_school_choices(form)
+
+
+
+
+
+# Class View form
+# ClassItem Form
+
+def getCurriculums():
+    curriculum = db.Curriculum.find(fields=('name',))
+    choices = [(str(x['_id']), x['name']) for x in curriculum]
+        
+    return choices
+    
+class ClassForm(form.Form):
+    
+
+    
+    
+    name = fields.StringField('name')
+    order = fields.StringField('order')
+    curriculum=fields.SelectField('Curriculum', widget=Select2Widget(), choices=getCurriculums())
+    
+       
+#classGroupForm form
+class ClassGroupForm(form.Form):
+    name = fields.StringField('classGroup')
+    school = fields.SelectField('School', widget=Select2Widget())
+
+    # Form list
+    Class = InlineFieldList(InlineFormField(ClassForm))
+    
+class ClassView(ModelView):
+    def is_accessible(self):
+       
+        
+        return current_user.is_authenticated()
+    
+    column_list = ("name","schoolName")
+    column_sortable_list = ('name')
+    form = ClassGroupForm
+    
+    
+    def get_list(self, *args, **kwargs):
+        count, data = super(ClassView, self).get_list(*args, **kwargs)
+
+       
+        for d in data:
+            sid=d["school"]
+            school=db.School.find_one({"_id":ObjectId(sid)})
+            #print(school)
+            
+            d["schoolName"]=school["name"]
+
+        return count, data
+    
+        # Contribute list of school and curriculum choices to the forms
+    def _feed_school_choices(self, form):
+        school = db.School.find(fields=('name',))
+        form.school.choices = [(str(x['_id']), x['name']) for x in school]
+        #curriculum = db.Curriculum.find(fields=('name',))
+        #form.Class.InlineFormField.form.curriculum.choices = [(str(x['_id']), x['name']) for x in curriculum]
+        return form
+
+    def create_form(self):
+        form = super(ClassView, self).create_form()
+        return self._feed_school_choices(form)
+
+    def edit_form(self, obj):
+        form = super(ClassView, self).edit_form(obj)
+        return self._feed_school_choices(form)
+
