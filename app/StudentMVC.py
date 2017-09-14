@@ -1,7 +1,7 @@
 
 
 from wtforms import form, fields
-
+from flask import  url_for, Markup
 
 from flask_admin.contrib.pymongo import ModelView, filters
 from flask_admin.model.fields import InlineFormField, InlineFieldList
@@ -34,6 +34,9 @@ class StudentForm(form.Form):
     dob=fields.StringField('dob', widget=widgets.DatePickerWidget())
     school=fields.SelectField('School', widget=Select2Widget())
     classAssigned=fields.SelectField('classAssigned', widget=Select2Widget(), choices=getListOfClasses())
+
+
+
     
 class StudentView(ModelView):
     def is_accessible(self):
@@ -41,8 +44,27 @@ class StudentView(ModelView):
         
         return current_user.is_authenticated()
     
+    def user_link_formatter(view, context, model, name):
+    
+        id = model["_id"]
+        url = "/admin/grades?sid="+str(id)
+        name=model["fname"]
+        return Markup('<a href="{}">{}</a>').format(url,name)
+    
+    
+   
+    
+    column_details_list = ('fname','mname','lname', 'schoolName','dob','className')
     column_list = ('fname','mname','lname', 'schoolName','dob','className')
+    column_formatters = {"fname": user_link_formatter}
+    
     column_sortable_list = ('fname')
+    column_searchable_list = ('fname', 'className')
+    column_filters = (filters.FilterEqual('fname', 'fname'),
+                       filters.FilterNotEqual('fname', 'fname'),
+                       filters.FilterLike('fname', 'fname'),
+                       filters.FilterEqual('className', 'className'),
+                       filters.FilterLike('schoolName', 'schoolName'))
     form = StudentForm
     
     
