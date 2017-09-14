@@ -1,0 +1,31 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+{{ super() }}
+
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+<div class="row">
+ <div class="col-lg-3 col-md-8">
+ {% if classes is not none %} 
+ <select id="selectedClass" name="selectedClass">
+ <option value="null">Select Class to Grade</option>
+ {% for class in classes %}
+    <option value="{{ class._id }}">{{class.name}}</option>
+  {% endfor %}       
+</select>
+
+<div id="location"></div>
+  </div>
+  <div class="col-lg-3 col-md-4" ><input id="btnViewCourses" type="button"  value="View Courses"/></div>
+  
+{%endif %}
+  
+</div>
+
+
+
+{% endblock body %}
+
+
