@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        {% extends 'admin/master.html' %}
+        {% block body %}
+        {{ super() }}
+        <script type="text/javascript">
+            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+        </script>
+        <div class="row">
+        <div class="col-md-8">
+            {% if studentObject is not none %} 
+            <h4>Students Assigned  to {{classObject.name}}</h4>
+            
+            
+            
+            <table class="table table-striped table-bordered table-hover model-list">
+            <tr><th>First Name</th><th>Middle Name</th><th>Last Name</th></tr>
+            {% for student in studentObject %}
+            <tr><td>{{student.fname}}</td><td>{{student.mname}}</td><td>{{student.lname}}</td></tr>
+            {% endfor %} 
+            </table>      
+            {%endif %}
+            </div>
+            {% endblock body %}
+        </div>
+      
+    </body>
+</html>

@@ -55,7 +55,41 @@ class StudentView(ModelView):
    
     
     column_details_list = ('fname','mname','lname', 'schoolName','dob','className')
-    column_list = ('fname','mname','lname', 'schoolName','dob','className')
+    def user_link_formatter(view, context, model, name):
+    
+        id = model["_id"]
+        url = "/admin/grades?sid="+str(id)
+        name=model["fname"]
+        return Markup('<a href="{}">{}</a>').format(url,name)
+    
+    
+   
+    
+    column_details_list = ('fname','mname','lname', 'schoolName','dob','className')
+    def user_link_formatter(view, context, model, name):
+    
+        id = model["_id"]
+        url = "/admin/grades?sid="+str(id)
+        name=model["fname"]
+        return Markup('<a href="{}">{}</a>').format(url,name)
+    
+    
+    def action_link_formatter(view, context, model, name):
+    
+        id = model["_id"]
+        url = "/admin/grades?sid="+str(id)
+        name=model["fname"]
+        return Markup('<a href="{}">{}</a>').format(url,"Enter Grades")
+    
+    
+   
+    
+    column_details_list = ('fname','mname','lname', 'schoolName','dob','className')
+    column_list = ('fname','mname','lname', 'schoolName','dob','className','Action')
+    column_formatters = {"fname": user_link_formatter,"Action":action_link_formatter}
+    
+    column_formatters = {"fname": user_link_formatter}
+    
     column_formatters = {"fname": user_link_formatter}
     
     column_sortable_list = ('fname')

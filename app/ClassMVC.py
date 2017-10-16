@@ -3,6 +3,7 @@ from wtforms import form, fields
 
 from flask_admin.contrib.pymongo import ModelView, filters
 from flask_admin.model.fields import InlineFormField, InlineFieldList
+from flask import  url_for, Markup
 
 
 from flask_login import current_user
@@ -29,8 +30,18 @@ class ClassView(ModelView):
         
         return current_user.is_authenticated()
     
-    column_list = ("name","schoolName","order","curriculumName")
+    
+    def action_link_formatter(view, context, model, name):
+    
+        id = model["_id"]
+        url = "/admin/classdetails?cid="+str(id)
+        
+        return Markup('<a href="{}">{}</a>').format(url,"View Students")
+    
+    column_list = ("name","schoolName","order","curriculumName","Action")
     column_sortable_list = ('name')
+    column_formatters = {"Action":action_link_formatter}
+
     form = ClassForm
     
     def get_list(self, *args, **kwargs):
